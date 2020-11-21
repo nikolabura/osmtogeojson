@@ -23,8 +23,28 @@ this page is based on https://github.com/aaronlidman/osm-and-geojson (c)Aaron Li
             document.getElementById('geojson').value = JSON.stringify(geojson, null, 4);
             console.log(geojson);
         }
-        $(function() {
+        function fileToGeo(e) {
+            const selectedFile = document.getElementById('osmfile').files[0];
+            const reader = new FileReader();
+            reader.onload = gotOsmFile;
+            reader.readAsText(selectedFile);
+        }
+        function gotOsmFile(e) {
+            const data = $.parseXML(e.target.result);
+            const geojson = JSON.stringify(osmtogeojson(data), null, 4);
+            const blob = new Blob([geojson], { type: "application/geo+json" });
+            const objUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objUrl;
+            link.download = "osm.geojson";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        $(function () {
             $("#toGeo").click(toGeo);
+            $("#downloadGeo").click(fileToGeo);
         });
     </script>
 
@@ -151,6 +171,10 @@ this page is based on https://github.com/aaronlidman/osm-and-geojson (c)Aaron Li
                 <textarea id="geojson" contenteditable="true"></textarea>
             </div>
             <a class="button" href="" id="toGeo">convert to GeoJSON &rarr;</a>
+        </div>
+        <div id="about">
+            <input type="file" id="osmfile">
+            <a class="button" id="downloadGeo">Download file as GeoJSON</a>
         </div>
         <div id="about">
             <p>osmtogeojson is a Javascript module for converting OSM data (OSM XML or Overpass JSON) to GeoJSON. It works in the browser, nodejs and can also be used as a command line tool. This OSM conversion code was written for and is maintained by the <a href="https://github.com/tyrasd/overpass-turbo">overpass-turbo</a> project.</p>
